@@ -1,0 +1,57 @@
+# =============================================================================
+# Raw datasets
+# =============================================================================
+# Ignore raw CSV and ZIP files because they may be large, local, or restricted.
+# The project can document the data source without uploading the raw files.
+data/raw/*.csv
+data/raw/*.zip
+
+# Keep the raw folder structure in Git even if the actual data files are ignored.
+!data/raw/.gitkeep
+
+
+# =============================================================================
+# Processed local outputs
+# =============================================================================
+# Ignore files generated locally during processing or experimentation.
+# These can be recreated from SQL/scripts, so they do not need to be committed.
+data/processed/*
+
+# Keep the processed folder structure in Git even if it is empty.
+!data/processed/.gitkeep
+
+
+# =============================================================================
+# Reference books / copyrighted material
+# =============================================================================
+# Do not upload copyrighted books or private reference material to GitHub.
+references/books/*
+
+
+# =============================================================================
+# Temporary / system files
+# =============================================================================
+# Ignore temporary logs and OS-generated files.
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+
+# Future experimental SQL work not included in the current portfolio release
+sql/future_enhancements/
+
+# Local/private visual assets
+assets/*
+!assets/.gitkeep
+!assets/egypt_used_cars_market_workflow_diagram.png
+
+# Private personal rulebook
+docs/rulebook.html
+
+# Private learning system
+docs/learning/
+README_private.md
+
+# Private references / books / learning materials
+references/
+reference/
