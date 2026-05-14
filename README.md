@@ -1,4 +1,4 @@
-# Egypt Used Cars Market Insights — SQL Analysis Project
+# Egypt Used Cars Market Analysis
 
 This project analyzes used-car listings in the Egyptian market to understand how listed prices vary by manufacturing year, mileage, budget segment, and common company/model combinations.
 
