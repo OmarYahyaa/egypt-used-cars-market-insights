@@ -11,7 +11,6 @@ Important PostgreSQL note:
 - After creating egypt_used_cars_db, connect to egypt_used_cars_db.
 - Then run the schema creation section.
 
-This script documents the setup so the project can be reproduced from GitHub.
 ===============================================================================
 */
 
@@ -23,7 +22,7 @@ Run this while connected to the default postgres database.
 ===============================================================================
 */
 
-CREATE DATABASE IF NOT EXISTS egypt_used_cars_db;
+CREATE DATABASE egypt_used_cars_db;
 
 
 /*
@@ -45,7 +44,7 @@ Optional: Set the default schema search path
 
 For this project, SQL scripts should still use explicit schema names, such as:
 raw.raw_used_car_listings_aug_2025
-clean.clean_used_car_listings_aug_2025_v1
+clean.clean_used_car_listings_aug_2025
 
 The search_path setting is only a convenience for interactive querying.
 
@@ -58,6 +57,8 @@ Permanent change:
 - Requires reconnecting to the database before the change is visible.
 ===============================================================================
 */
+
+/* The search_path defines the default order PostgreSQL uses when resolving unqualified table names */
 
 -- Current session change
 SET search_path TO raw, clean, analysis;
@@ -73,7 +74,7 @@ Run these after setup to confirm the database and schemas exist.
 */
 
 -- Show current database
-SELECT current_database();
+SELECT CURRENT_DATABASE();
 
 -- Show the first active schema in the current search path
 SELECT CURRENT_SCHEMA();

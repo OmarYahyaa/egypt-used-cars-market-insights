@@ -89,9 +89,6 @@ Notes:
 - raw_listing_id is GENERATED ALWAYS AS IDENTITY, so it is not included.
 - loaded_at has DEFAULT NOW(), so it is not included.
 - source_file_name is added manually because it does not exist in the CSV.
--- Important:
--- Run this insert only once after creating the raw table.
--- If re-running the full import process, recreate or truncate the final raw table first.
 ===============================================================================
 */
 

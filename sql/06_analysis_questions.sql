@@ -6,16 +6,14 @@ Egypt Used Cars Market Analysis
 ===============================================================================
 
 Purpose:
-Official analysis queries for the Egypt Used Cars Market Analysis project.
+Answer the core business questions of the Egypt used cars market using the cleaned layer.
 
 Default table:
-clean.clean_used_car_listings_aug_2025_v1
+clean.clean_used_car_listings_aug_2025
 
 Default analysis filter:
 WHERE is_analysis_ready = TRUE
 
-Note:
-This file uses the official clean v1 table. Clean v2 is documented only as a future enhancement.
 */
 
 
@@ -33,7 +31,7 @@ SELECT
     PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price_egp) AS median_listed_price,
     MAX(price_egp) AS maximum_listed_price,
     MAX(price_egp) - MIN(price_egp) AS price_gap
-FROM clean.clean_used_car_listings_aug_2025_v1
+FROM clean.clean_used_car_listings_aug_2025
 WHERE is_analysis_ready = TRUE
 GROUP BY manufacturing_year
 ORDER BY manufacturing_year;
@@ -60,7 +58,7 @@ WITH mileage_segments AS (
         price_egp,
         mileage_km,
         manufacturing_year
-    FROM clean.clean_used_car_listings_aug_2025_v1
+    FROM clean.clean_used_car_listings_aug_2025
     WHERE is_analysis_ready = TRUE
 )
 
@@ -105,7 +103,7 @@ WITH budget_segments AS (
             WHEN price_egp >= 1000000 AND price_egp < 2000000 THEN 4
             ELSE 5
         END AS budget_segment_order
-    FROM clean.clean_used_car_listings_aug_2025_v1
+    FROM clean.clean_used_car_listings_aug_2025
     WHERE is_analysis_ready = TRUE
 )
 
@@ -152,7 +150,7 @@ WITH budget_segments AS (
             WHEN price_egp >= 1000000 AND price_egp < 2000000 THEN 4
             ELSE 5
         END AS budget_segment_order
-    FROM clean.clean_used_car_listings_aug_2025_v1
+    FROM clean.clean_used_car_listings_aug_2025
     WHERE is_analysis_ready = TRUE
 ),
 company_model_summary AS (
@@ -220,7 +218,7 @@ WITH similar_car_benchmarks_step1 AS (
         PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY price_egp) AS q3_listed_price,
         MAX(price_egp) AS maximum_listed_price,
         PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY mileage_km) AS median_mileage_km
-    FROM clean.clean_used_car_listings_aug_2025_v1
+    FROM clean.clean_used_car_listings_aug_2025
     WHERE is_analysis_ready = TRUE
     GROUP BY company, model, manufacturing_year, mileage_category
     HAVING COUNT(*) >= 5
@@ -282,7 +280,7 @@ WITH similar_car_benchmarks_step1 AS (
         PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY price_egp) AS q3_listed_price,
         MAX(price_egp) AS maximum_listed_price,
         PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY mileage_km) AS median_mileage_km
-    FROM clean.clean_used_car_listings_aug_2025_v1
+    FROM clean.clean_used_car_listings_aug_2025
     WHERE is_analysis_ready = TRUE
     GROUP BY company, model, manufacturing_year, mileage_category
     HAVING COUNT(*) >= 5

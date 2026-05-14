@@ -61,76 +61,99 @@ Missing-like values checked: NULL, empty string, NA, N/A, UNKNOWN, -
 ===============================================================================
 */
 
-WITH total_count AS (
-    SELECT COUNT(*) AS total_rows
-    FROM raw.raw_used_car_listings_aug_2025
-),
-missing_counts AS (
-    SELECT 'title' AS column_name, COUNT(*) AS total_number_of_missing
+WITH missing_counts AS (
+    SELECT 
+        'title' AS column_name,
+         COUNT(*) AS total_number_of_missing
     FROM raw.raw_used_car_listings_aug_2025
     WHERE title IS NULL OR UPPER(TRIM(title)) IN ('', 'NA', 'N/A', 'UNKNOWN', '-')
 
     UNION ALL
-    SELECT 'company', COUNT(*)
+    SELECT 
+        'company',
+         COUNT(*)
     FROM raw.raw_used_car_listings_aug_2025
     WHERE company IS NULL OR UPPER(TRIM(company)) IN ('', 'NA', 'N/A', 'UNKNOWN', '-')
 
     UNION ALL
-    SELECT 'model', COUNT(*)
+    SELECT 
+        'model',
+         COUNT(*)
     FROM raw.raw_used_car_listings_aug_2025
     WHERE model IS NULL OR UPPER(TRIM(model)) IN ('', 'NA', 'N/A', 'UNKNOWN', '-')
 
     UNION ALL
-    SELECT 'year', COUNT(*)
+    SELECT 
+        'year',
+         COUNT(*)
     FROM raw.raw_used_car_listings_aug_2025
     WHERE year IS NULL OR UPPER(TRIM(year)) IN ('', 'NA', 'N/A', 'UNKNOWN', '-')
 
     UNION ALL
-    SELECT 'price', COUNT(*)
+    SELECT 
+        'price',
+         COUNT(*)
     FROM raw.raw_used_car_listings_aug_2025
     WHERE price IS NULL OR UPPER(TRIM(price)) IN ('', 'NA', 'N/A', 'UNKNOWN', '-')
 
     UNION ALL
-    SELECT 'mileage', COUNT(*)
+    SELECT 
+        'mileage',
+         COUNT(*)
     FROM raw.raw_used_car_listings_aug_2025
     WHERE mileage IS NULL OR UPPER(TRIM(mileage)) IN ('', 'NA', 'N/A', 'UNKNOWN', '-')
 
     UNION ALL
-    SELECT 'color', COUNT(*)
+    SELECT 
+        'color',
+         COUNT(*)
     FROM raw.raw_used_car_listings_aug_2025
     WHERE color IS NULL OR UPPER(TRIM(color)) IN ('', 'NA', 'N/A', 'UNKNOWN', '-')
 
     UNION ALL
-    SELECT 'transmission', COUNT(*)
+    SELECT 
+        'transmission',
+         COUNT(*)
     FROM raw.raw_used_car_listings_aug_2025
     WHERE transmission IS NULL OR UPPER(TRIM(transmission)) IN ('', 'NA', 'N/A', 'UNKNOWN', '-')
 
     UNION ALL
-    SELECT 'location', COUNT(*)
+    SELECT 
+        'location',
+         COUNT(*)
     FROM raw.raw_used_car_listings_aug_2025
     WHERE location IS NULL OR UPPER(TRIM(location)) IN ('', 'NA', 'N/A', 'UNKNOWN', '-')
 
     UNION ALL
-    SELECT 'date_posted', COUNT(*)
+    SELECT 
+        'date_posted',
+         COUNT(*)
     FROM raw.raw_used_car_listings_aug_2025
     WHERE date_posted IS NULL OR UPPER(TRIM(date_posted)) IN ('', 'NA', 'N/A', 'UNKNOWN', '-')
 
     UNION ALL
-    SELECT 'features', COUNT(*)
+    SELECT 
+        'features',
+         COUNT(*)
     FROM raw.raw_used_car_listings_aug_2025
     WHERE features IS NULL OR UPPER(TRIM(features)) IN ('', 'NA', 'N/A', 'UNKNOWN', '-')
 
     UNION ALL
-    SELECT 'detail_link', COUNT(*)
+    SELECT 
+        'detail_link',
+         COUNT(*)
     FROM raw.raw_used_car_listings_aug_2025
     WHERE detail_link IS NULL OR UPPER(TRIM(detail_link)) IN ('', 'NA', 'N/A', 'UNKNOWN', '-')
 )
 SELECT
     column_name,
     total_number_of_missing,
-    ROUND(total_number_of_missing * 100.0 / total_rows, 2) AS missing_percent
+    ROUND(
+        total_number_of_missing * 100.0
+        / (SELECT COUNT(*) FROM raw.raw_used_car_listings_aug_2025),
+        2
+    ) AS missing_percent
 FROM missing_counts
-CROSS JOIN total_count
 ORDER BY total_number_of_missing DESC, column_name;
 
 
@@ -191,27 +214,6 @@ FROM (
     HAVING COUNT(*) > 1
 ) AS exact_duplicates;
 
-
-/*
-Sample duplicate detail_link rows
-*/
-
-SELECT
-    *
-FROM (
-    SELECT
-        *,
-        ROW_NUMBER() OVER (
-            PARTITION BY detail_link
-            ORDER BY raw_listing_id
-        ) AS duplicate_sequence
-    FROM raw.raw_used_car_listings_aug_2025
-) AS duplicated_links
-WHERE duplicate_sequence > 1
-ORDER BY detail_link, duplicate_sequence
-LIMIT 100;
-
-
 /*
 ===============================================================================
 4. Year quality summary
@@ -251,38 +253,6 @@ SELECT
     MIN(numeric_year) AS minimum_numeric_year,
     MAX(numeric_year) AS maximum_numeric_year
 FROM year_profile;
-
-
-/*
-Sample invalid year rows
-*/
-
-WITH year_profile AS (
-    SELECT
-        raw_listing_id,
-        title,
-        company,
-        model,
-        year,
-        CASE
-            WHEN TRIM(year) ~ '^[0-9]+$'
-            THEN CAST(TRIM(year) AS SMALLINT)
-        END AS numeric_year
-    FROM raw.raw_used_car_listings_aug_2025
-)
-SELECT
-    raw_listing_id,
-    title,
-    company,
-    model,
-    year,
-    numeric_year
-FROM year_profile
-WHERE numeric_year < 1950
-   OR numeric_year > 2026
-ORDER BY numeric_year, raw_listing_id
-LIMIT 50;
-
 
 /*
 ===============================================================================
@@ -338,57 +308,6 @@ SELECT
     MIN(price_egp) AS minimum_price_egp,
     MAX(price_egp) AS maximum_price_egp
 FROM numeric_price_profile;
-
-
-/*
-Sample suspicious price rows
-*/
-
-WITH price_profile AS (
-    SELECT
-        raw_listing_id,
-        title,
-        company,
-        model,
-        year,
-        price,
-        CASE
-            WHEN price IS NULL
-              OR UPPER(TRIM(price)) IN ('', 'NA', 'N/A', 'UNKNOWN', '-')
-            THEN NULL
-            ELSE TRIM(
-                REPLACE(
-                    REPLACE(UPPER(TRIM(price)), 'EGP', ''),
-                    ',',
-                    ''
-                )
-            )
-        END AS cleaned_price_text
-    FROM raw.raw_used_car_listings_aug_2025
-),
-numeric_price_profile AS (
-    SELECT
-        *,
-        CASE
-            WHEN cleaned_price_text ~ '^[0-9]+$'
-            THEN cleaned_price_text::NUMERIC
-        END AS price_egp
-    FROM price_profile
-)
-SELECT
-    raw_listing_id,
-    title,
-    company,
-    model,
-    year,
-    price,
-    price_egp
-FROM numeric_price_profile
-WHERE price_egp < 50000
-   OR price_egp > 20000000
-ORDER BY price_egp DESC
-LIMIT 100;
-
 
 /*
 ===============================================================================
@@ -446,59 +365,6 @@ SELECT
     MAX(mileage_km) AS maximum_mileage_km
 FROM numeric_mileage_profile;
 
-
-/*
-Sample suspicious mileage rows
-*/
-
-WITH mileage_profile AS (
-    SELECT
-        raw_listing_id,
-        title,
-        company,
-        model,
-        year,
-        price,
-        mileage,
-        CASE
-            WHEN mileage IS NULL
-              OR UPPER(TRIM(mileage)) IN ('', 'NA', 'N/A', 'UNKNOWN', '-')
-            THEN NULL
-            ELSE TRIM(
-                REPLACE(
-                    REPLACE(UPPER(TRIM(mileage)), 'KM', ''),
-                    ',',
-                    ''
-                )
-            )
-        END AS cleaned_mileage_text
-    FROM raw.raw_used_car_listings_aug_2025
-),
-numeric_mileage_profile AS (
-    SELECT
-        *,
-        CASE
-            WHEN cleaned_mileage_text ~ '^[0-9]+$'
-            THEN cleaned_mileage_text::NUMERIC
-        END AS mileage_km
-    FROM mileage_profile
-)
-SELECT
-    raw_listing_id,
-    title,
-    company,
-    model,
-    year,
-    price,
-    mileage,
-    mileage_km
-FROM numeric_mileage_profile
-WHERE mileage_km IN (0, 1)
-   OR mileage_km > 500000
-ORDER BY mileage_km DESC
-LIMIT 100;
-
-
 /*
 ===============================================================================
 7. Transmission coverage
@@ -528,37 +394,6 @@ SELECT
     COUNT(DISTINCT location) AS distinct_location_count
 FROM raw.raw_used_car_listings_aug_2025;
 
-
-/*
-Top 20 locations
-*/
-
-SELECT
-    location,
-    COUNT(*) AS total_count,
-    ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM raw.raw_used_car_listings_aug_2025), 2) AS percentage
-FROM raw.raw_used_car_listings_aug_2025
-GROUP BY location
-ORDER BY total_count DESC
-LIMIT 20;
-
-
-/*
-Suspicious locations where location appears inside title
-*/
-
-SELECT
-    raw_listing_id,
-    title,
-    location,
-    COUNT(*) OVER () AS suspicious_location_rows
-FROM raw.raw_used_car_listings_aug_2025
-WHERE TRIM(location) <> ''
-  AND title ILIKE '%' || location || '%'
-ORDER BY location, raw_listing_id
-LIMIT 100;
-
-
 /*
 ===============================================================================
 9. Feature quality summary
@@ -581,20 +416,6 @@ SELECT
         COUNT(*) - (SELECT total_missing FROM missing_features)
     ) - COUNT(*) FILTER (WHERE features LIKE '%|%') AS total_number_with_only_one_feature
 FROM raw.raw_used_car_listings_aug_2025;
-
-
-/*
-Top raw feature strings
-*/
-
-SELECT
-    features,
-    COUNT(*) AS total_count
-FROM raw.raw_used_car_listings_aug_2025
-GROUP BY features
-ORDER BY total_count DESC
-LIMIT 20;
-
 
 /*
 ===============================================================================
@@ -684,9 +505,24 @@ GROUP BY location
 ORDER BY total_count ASC, location
 LIMIT 20;
 
+/*
+C. Suspicious locations where location appears inside title
+*/
+
+SELECT
+    raw_listing_id,
+    title,
+    location,
+    COUNT(*) OVER () AS suspicious_location_rows
+FROM raw.raw_used_car_listings_aug_2025
+WHERE TRIM(location) <> ''
+  AND title ILIKE '%' || location || '%'
+ORDER BY location, raw_listing_id
+LIMIT 100;
+
 
 /*
-C. Raw missing-like price values
+D. Raw missing-like price values
 */
 
 SELECT
@@ -700,7 +536,7 @@ ORDER BY row_count DESC;
 
 
 /*
-D. Raw missing-like mileage values
+E. Raw missing-like mileage values
 */
 
 SELECT
@@ -714,7 +550,7 @@ ORDER BY row_count DESC;
 
 
 /*
-E. Full raw feature string distribution
+F. Full raw feature string distribution
 */
 
 SELECT

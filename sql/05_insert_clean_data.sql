@@ -9,7 +9,7 @@ Schema: clean
 
 This script:
 - reads from raw.raw_used_car_listings_aug_2025
-- inserts into clean.clean_used_car_listings_aug_2025_v1
+- inserts into clean.clean_used_car_listings_aug_2025
 - preserves raw messy values for auditability
 - creates clean analytical columns
 - creates quality flags
@@ -20,15 +20,6 @@ Important:
 - PostgreSQL fills cleaned_at automatically using DEFAULT NOW().
 ===============================================================================
 */
-
-
-/*
-===============================================================================
-0. Clear clean table before reload
-===============================================================================
-*/
-
-TRUNCATE TABLE clean.clean_used_car_listings_aug_2025_v1;
 
 
 /*
@@ -307,7 +298,7 @@ analysis_ready AS (
     FROM location_flags
 )
 
-INSERT INTO clean.clean_used_car_listings_aug_2025_v1 (
+INSERT INTO clean.clean_used_car_listings_aug_2025 (
     raw_listing_id,
     detail_link,
     source_file_name,
@@ -400,7 +391,7 @@ UNION ALL
 SELECT
     'clean_table' AS table_name,
     COUNT(*) AS row_count
-FROM clean.clean_used_car_listings_aug_2025_v1;
+FROM clean.clean_used_car_listings_aug_2025;
 
 
 /*
@@ -410,7 +401,7 @@ FROM clean.clean_used_car_listings_aug_2025_v1;
 SELECT
     is_analysis_ready,
     COUNT(*) AS row_count
-FROM clean.clean_used_car_listings_aug_2025_v1
+FROM clean.clean_used_car_listings_aug_2025
 GROUP BY is_analysis_ready
 ORDER BY is_analysis_ready DESC;
 
@@ -426,7 +417,7 @@ Expected:
 SELECT
     duplicate_quality_flag,
     COUNT(*) AS row_count
-FROM clean.clean_used_car_listings_aug_2025_v1
+FROM clean.clean_used_car_listings_aug_2025
 GROUP BY duplicate_quality_flag
 ORDER BY row_count DESC;
 
@@ -443,7 +434,7 @@ Expected:
 SELECT
     price_quality_flag,
     COUNT(*) AS row_count
-FROM clean.clean_used_car_listings_aug_2025_v1
+FROM clean.clean_used_car_listings_aug_2025
 GROUP BY price_quality_flag
 ORDER BY row_count DESC;
 
@@ -461,7 +452,7 @@ Expected:
 SELECT
     mileage_quality_flag,
     COUNT(*) AS row_count
-FROM clean.clean_used_car_listings_aug_2025_v1
+FROM clean.clean_used_car_listings_aug_2025
 GROUP BY mileage_quality_flag
 ORDER BY row_count DESC;
 
@@ -478,7 +469,7 @@ Expected:
 SELECT
     year_quality_flag,
     COUNT(*) AS row_count
-FROM clean.clean_used_car_listings_aug_2025_v1
+FROM clean.clean_used_car_listings_aug_2025
 GROUP BY year_quality_flag
 ORDER BY row_count DESC;
 
@@ -492,7 +483,7 @@ Expected:
 SELECT
     date_quality_flag,
     COUNT(*) AS row_count
-FROM clean.clean_used_car_listings_aug_2025_v1
+FROM clean.clean_used_car_listings_aug_2025
 GROUP BY date_quality_flag
 ORDER BY row_count DESC;
 
@@ -507,7 +498,7 @@ Expected:
 SELECT
     location_quality_flag,
     COUNT(*) AS row_count
-FROM clean.clean_used_car_listings_aug_2025_v1
+FROM clean.clean_used_car_listings_aug_2025
 GROUP BY location_quality_flag
 ORDER BY row_count DESC;
 
@@ -523,4 +514,4 @@ SELECT
     COUNT(source_file_name) AS source_file_names,
     COUNT(loaded_at) AS loaded_timestamps,
     COUNT(cleaned_at) AS cleaned_timestamps
-FROM clean.clean_used_car_listings_aug_2025_v1;
+FROM clean.clean_used_car_listings_aug_2025;

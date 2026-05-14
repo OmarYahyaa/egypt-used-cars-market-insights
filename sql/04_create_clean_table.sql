@@ -10,7 +10,7 @@ Schema: clean
 Notes:
 - The clean table keeps one row per raw listing row.
 - raw_listing_id is used as the primary key and traceability link to the raw table.
-- Raw messy values are preserved for auditability.
+- Raw messy values are preserved for traceability.
 - Clean analytical columns are created for analysis.
 - Quality flags make data quality issues explicit instead of hiding them.
 ===============================================================================
@@ -23,9 +23,9 @@ Create clean table
 ===============================================================================
 */
 
-DROP TABLE IF EXISTS clean.clean_used_car_listings_aug_2025_v1;
+DROP TABLE IF EXISTS clean.clean_used_car_listings_aug_2025;
 
-CREATE TABLE clean.clean_used_car_listings_aug_2025_v1 (
+CREATE TABLE clean.clean_used_car_listings_aug_2025 (
     /*
     ---------------------------------------------------------------------------
     Traceability columns
@@ -108,5 +108,5 @@ SELECT
     column_default
 FROM information_schema.columns
 WHERE table_schema = 'clean'
-  AND table_name = 'clean_used_car_listings_aug_2025_v1'
+  AND table_name = 'clean_used_car_listings_aug_2025'
 ORDER BY ordinal_position;

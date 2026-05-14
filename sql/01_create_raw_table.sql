@@ -40,9 +40,9 @@ CREATE TABLE raw.raw_used_car_listings_aug_2025 (
     features TEXT,
     detail_link TEXT,
 
-    -- Metadata columns
+    -- Metadata columns/Data Lineage
     source_file_name TEXT NOT NULL,
-    loaded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    loaded_at TIMESTAMPTZ NOT NULL DEFAULT NOW() /* Timestamp with time zone */
 );
 
 
@@ -62,4 +62,4 @@ SELECT
 FROM information_schema.columns
 WHERE table_schema = 'raw'
   AND table_name = 'raw_used_car_listings_aug_2025'
-ORDER BY ordinal_position;
+ORDER BY ordinal_position; /* Column order inside the table definition */
